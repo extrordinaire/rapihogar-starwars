@@ -70,10 +70,13 @@ const search_query = useQuery({
 
 <template>
   <main class="responsive">
-    <h3>
-      Rapi Star-Wars
-    </h3>
-    <img src="../assets/logo_rapihogar.svg" alt="rapihogar">
+    <div class="flex justify-center w-full">
+      <picture class="relative h-96 block aspect-square">
+        <img src="../assets/logo_star_wars.svg" alt="star-wars" class="absolute dark:invert h-full" />
+        <img src="../assets/logo_rapihogar.svg" alt="rapihogar" class="absolute dark:invert grayscale
+                  h-1/6 right-0 bottom-1/4 z-10 drop-shadow-lg/100 drop-shadow-black -rotate-12">
+      </picture>
+    </div>
     <div class="w-full flex items-center flex-col">
       <SearchBar v-model:search_query="search" :species="species" :vehicles="vehicles" @search="payload =>
         console.log(payload)" @change="e => {
