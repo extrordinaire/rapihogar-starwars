@@ -1,4 +1,4 @@
-import { z } from "@zod/mini"
+import { map, z } from "@zod/mini"
 
 // SCHEMA_SWAPI_PEOPLE
 export const SCHEMA_SWAPI_PEOPLE = z.object({
@@ -53,22 +53,35 @@ export type T_SWAPI_PEOPLE_REDUCED = z.infer<typeof SCHEMA_SWAPI_PEOPLE_REDUCED>
 
 // SCHEMA_SWAPI_VEHICLE
 export const SCHEMA_SWAPI_VEHICLE = z.object({
-  name: z.string(),
-  model: z.string(),
-  vehicle_class: z.string(),
-  manufacturer: z.string(),
-  length: z.string(),
-  cost_in_credits: z.string(),
-  crew: z.string(),
-  passengers: z.string(),
-  max_atmosphering_speed: z.string(),
-  cargo_capacity: z.string(),
-  consumables: z.nullable(z.string()),
-  films: z.array(z.string()),
-  pilots: z.array(z.string()),
-  url: z.string(),
-  created: z.string(),
-  edited: z.string(),
+  result: z.object({
+    properties: z.object({
+      name: z.string(),
+      model: z.string(),
+      vehicle_class: z.string(),
+      manufacturer: z.string(),
+      length: z.string(),
+      cost_in_credits: z.string(),
+      crew: z.string(),
+      passengers: z.string(),
+      max_atmosphering_speed: z.string(),
+      cargo_capacity: z.string(),
+      consumables: z.nullable(z.string()),
+      films: z.array(z.string()),
+      pilots: z.array(z.string()),
+      url: z.string(),
+      created: z.string(),
+      edited: z.string(),
+    }),
+    "_id": z.string(),
+    description: z.string(),
+    uid: z.string(),
+    "__v": z.number(),
+  }),
+  message: z.string(),
+  apiVersion: z.string(),
+  timestamp: z.string(),
+  social: z.record(z.string(), z.string()),
+  support: z.any(),
 });
 export type T_SWAPI_VEHICLE = z.infer<typeof SCHEMA_SWAPI_VEHICLE>;
 
@@ -81,21 +94,34 @@ export type T_SWAPI_VEHICLE_REDUCED = z.infer<typeof SCHEMA_SWAPI_VEHICLE_REDUCE
 
 // SCHEMA_SWAPI_SPECIES
 export const SCHEMA_SWAPI_SPECIES = z.object({
-  name: z.string(),
-  classification: z.string(),
-  designation: z.string(),
-  average_height: z.string(),
-  average_lifespan: z.string(),
-  eye_colors: z.string(),
-  hair_colors: z.string(),
-  skin_colors: z.string(),
-  language: z.string(),
-  homeworld: z.string(),
-  people: z.array(z.string()),
-  films: z.array(z.string()),
-  url: z.string(),
-  created: z.string(),
-  edited: z.string(),
+  result: z.object({
+    properties: z.object({
+      name: z.string(),
+      classification: z.string(),
+      designation: z.string(),
+      average_height: z.string(),
+      average_lifespan: z.string(),
+      eye_colors: z.string(),
+      hair_colors: z.string(),
+      skin_colors: z.string(),
+      language: z.string(),
+      homeworld: z.string(),
+      people: z.array(z.string()),
+      films: z.optional(z.array(z.string())),
+      url: z.string(),
+      created: z.string(),
+      edited: z.string(),
+    }),
+    "_id": z.string(),
+    description: z.string(),
+    uid: z.string(),
+    "__v": z.number(),
+  }),
+  message: z.string(),
+  apiVersion: z.string(),
+  timestamp: z.string(),
+  social: z.record(z.string(), z.string()),
+  support: z.any(),
 });
 export type T_SWAPI_SPECIES = z.infer<typeof SCHEMA_SWAPI_SPECIES>;
 

@@ -36,10 +36,10 @@ const SkeletonData = defineComponent({
       required: false,
     }
   },
-  render: (props, { slots }) => {
+  setup: (props, { slots }) => {
     const random_size = 8 + Math.floor(Math.random() * 8)
 
-    return (
+    return () => (
       <>
         {character_query.isLoading.value &&
           <div style={{ width: `${random_size / 3}rem` }} class={`!rounded-xs bg-gray-500 animate-pulse h-4 inline-block ${props.class}`} />}
@@ -47,7 +47,7 @@ const SkeletonData = defineComponent({
           <div style={{ width: `${random_size / 3}rem` }} class={`!rounded-xs bg-gray-500 h-4
           inline-block opacity-30`} />}
         {character_query.isSuccess.value &&
-          slots.default()}
+          slots.default && slots.default()}
       </>
     )
 
@@ -66,16 +66,18 @@ const SkeletonData = defineComponent({
         {{ props.gender }}
       </p>
       <i class="s2 rotate-45">genetics</i>
-      <p class="s10">
+      <ul class="s10 !px-0">
         <SkeletonData>
-          {{ character_query.data.value?.species }}
+          <li v-for="species in character_query.data.value?.species" :key="species.result.uid">
+            {{ species.result.properties.name }}
+          </li>
         </SkeletonData>
-      </p>
+      </ul>
       <i class="s2">search_hands_free</i>
       <ul class="s10 !px-0">
         <SkeletonData>
-          <li v-for="vehicle in character_query.data.value?.vehicles" :key="vehicle">
-            {{ vehicle }}
+          <li v-for="vehicle in character_query.data.value?.vehicles" :key="vehicle.result.uid">
+            {{ vehicle.result.properties.name }}
           </li>
         </SkeletonData>
       </ul>

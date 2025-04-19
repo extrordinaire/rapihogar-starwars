@@ -73,6 +73,7 @@ const search_query = useQuery({
     <h3>
       Rapi Star-Wars
     </h3>
+    <img src="../assets/logo_rapihogar.svg" alt="rapihogar">
     <div class="w-full flex items-center flex-col">
       <SearchBar v-model:search_query="search" :species="species" :vehicles="vehicles" @search="payload =>
         console.log(payload)" @change="e => {

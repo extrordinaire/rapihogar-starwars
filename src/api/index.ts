@@ -3,7 +3,7 @@ import wretch from 'wretch'
 import type { z } from '@zod/mini'
 import { queryStringAddon } from 'wretch/addons'
 
-import { SCHEMA_SWAPI_LIST_RESPONSE, type T_SWAPI_VEHICLE, type T_SWAPI_SPECIES_REDUCED, SCHEMA_SWAPI_SPECIES_REDUCED, type T_SWAPI_VEHICLE_REDUCED, SCHEMA_SWAPI_VEHICLE_REDUCED, type T_SWAPI_PEOPLE, type T_SWAPI_PEOPLE_REDUCED, SCHEMA_SWAPI_PEOPLE_REDUCED, SCHEMA_SWAPI_SEARCH_RESPONSE, SCHEMA_SWAPI_PEOPLE, type T_SWAPI_PEOPLE_SEARCH, SCHEMA_SWAPI_PEOPLE_SEARCH } from './schemas.ts'
+import { SCHEMA_SWAPI_LIST_RESPONSE, type T_SWAPI_VEHICLE, type T_SWAPI_SPECIES_REDUCED, SCHEMA_SWAPI_SPECIES_REDUCED, type T_SWAPI_VEHICLE_REDUCED, SCHEMA_SWAPI_VEHICLE_REDUCED, type T_SWAPI_PEOPLE, type T_SWAPI_PEOPLE_REDUCED, SCHEMA_SWAPI_PEOPLE_REDUCED, SCHEMA_SWAPI_SEARCH_RESPONSE, SCHEMA_SWAPI_PEOPLE, type T_SWAPI_PEOPLE_SEARCH, SCHEMA_SWAPI_PEOPLE_SEARCH, SCHEMA_SWAPI_VEHICLE, SCHEMA_SWAPI_SPECIES, type T_SWAPI_SPECIES } from './schemas.ts'
 
 
 type T_UNWRAP<T> = {
@@ -20,11 +20,24 @@ async function unwrap<T>(promise: Promise<T>): Promise<T_UNWRAP<T>> {
 }
 
 const api = wretch(
-  //'https://www.swapi.tech/api', // Parece que está deprecada, no devuelve informacion completa con
+  'https://www.swapi.tech/api', // Parece que está deprecada, no devuelve informacion completa con
   //con requests a recursos específicos imposibilitando completar el desafío.
-  'https://swapi-api.hbtn.io/api',
+  //'https://swapi-api.hbtn.io/api',
   {
     mode: "cors",
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+  .addon(queryStringAddon)
+  .errorType('json')
+  .resolve(r => r.json())
+
+
+const chara_api = wretch(
+  'https://swapi-api.hbtn.io/api',
+  {
+    mode: 'cors',
     headers: {
       "Content-Type": "application/json"
     }
@@ -104,16 +117,56 @@ export async function search_people(params: { name: string }): Promise<T_SWAPI_P
   return people
 }
 
-export async function get_people(params: { uid: string }): Promise<T_SWAPI_PEOPLE> {
+export async function get_vehicle(params: { uid: string }): Promise<T_SWAPI_VEHICLE> {
   const { success: fetching_success, error: fetching_error } =
-    await unwrap(api.query({ expanded: true }).get(`/people/${params.uid}`))
+    await unwrap(api.get(`/vehicles/${params.uid}`))
 
   if (fetching_error) {
     console.error(fetching_error)
     throw fetching_error
   }
 
-  const { data: people, error: parsing_error } =
+  const { data: vehicle_data, error: parsing_error } =
+    SCHEMA_SWAPI_VEHICLE.safeParse(fetching_success)
+
+  if (parsing_error) {
+    console.error(parsing_error, fetching_success)
+    throw parsing_error
+  }
+
+  return vehicle_data
+}
+
+export async function get_species(params: { uid: string }): Promise<T_SWAPI_SPECIES> {
+  const { success: fetching_success, error: fetching_error } =
+    await unwrap(api.get(`/species/${params?.uid}`))
+
+  if (fetching_error) {
+    console.error(fetching_error)
+    throw fetching_error
+  }
+
+  const { data: species_data, error: parsing_error } =
+    SCHEMA_SWAPI_SPECIES.safeParse(fetching_success)
+
+  if (parsing_error) {
+    console.error(parsing_error, fetching_success)
+    throw parsing_error
+  }
+
+  return species_data
+}
+
+export async function get_people(params: { uid: string }) {
+  const { success: fetching_success, error: fetching_error } =
+    await unwrap(chara_api.get(`/people/${params.uid}`))
+
+  if (fetching_error) {
+    console.error(fetching_error)
+    throw fetching_error
+  }
+
+  const { data: people_data, error: parsing_error } =
     SCHEMA_SWAPI_PEOPLE.safeParse(fetching_success)
 
   if (parsing_error) {
@@ -121,5 +174,23 @@ export async function get_people(params: { uid: string }): Promise<T_SWAPI_PEOPL
     throw parsing_error
   }
 
+  const vehicle_data = await Promise.all(
+    people_data.vehicles
+      .map(async (vehicle_url) => await get_vehicle(
+        { uid: vehicle_url.replace('https://swapi-api.hbtn.io/api/vehicles/', '') })))
+
+  const species_data = await Promise.all(
+    people_data.species
+      .map(async (species_url) => await get_species(
+        { uid: species_url.replace('https://swapi-api.hbtn.io/api/species/', '') }))
+  )
+
+  const people = {
+    ...people_data,
+    vehicles: vehicle_data,
+    species: species_data,
+  }
+
   return people
 }
+
