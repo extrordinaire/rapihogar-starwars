@@ -7,6 +7,8 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 import tailwindcss from '@tailwindcss/vite'
 
+import glsl from 'vite-plugin-glsl'
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -14,6 +16,7 @@ export default defineConfig({
     vueJsx(),
     vueDevTools(),
     tailwindcss(),
+    glsl(),
   ],
   resolve: {
     alias: {
