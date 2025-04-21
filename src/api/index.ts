@@ -174,21 +174,9 @@ export async function get_people(params: { uid: string }) {
     throw parsing_error
   }
 
-  const vehicle_data = await Promise.all(
-    people_data.vehicles
-      .map(async (vehicle_url) => await get_vehicle(
-        { uid: vehicle_url.replace('https://swapi-api.hbtn.io/api/vehicles/', '') })))
-
-  const species_data = await Promise.all(
-    people_data.species
-      .map(async (species_url) => await get_species(
-        { uid: species_url.replace('https://swapi-api.hbtn.io/api/species/', '') }))
-  )
 
   const people = {
     ...people_data,
-    vehicles: vehicle_data,
-    species: species_data,
   }
 
   return people

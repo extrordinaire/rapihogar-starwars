@@ -3,17 +3,25 @@ import { useDebouncedRef } from '@/composables/useDebouncedRef';
 import { computed, ref } from 'vue';
 
 import { useQuery, keepPreviousData } from '@tanstack/vue-query';
+import { useVirtualizer, elementScroll } from '@tanstack/vue-virtual'
 
 import CharacterCard from '@/components/CharacterCard.vue';
 import SearchBar from '@/components/SearchBar.vue';
 
-import { get_all_species, get_all_vehicles, search_people } from '@/api'
+import { search_people } from '@/api'
 import { Temporal } from 'temporal-polyfill';
+
+import { useRemoteAllSpecies } from '@/api/queries/use_remote_species'
+import { useRemoteVehicles } from '@/api/queries/use_remote_vehicles'
 
 const {
   value: search,
   debounced_value: debounced_search
 } = useDebouncedRef({ initial_value: '', delay: { milliseconds: 300 } })
+
+
+const species_query = useRemoteAllSpecies()
+const vehicles_query = useRemoteVehicles()
 
 const selected_species = ref<null | string>(null)
 const selected_vehicle = ref<null | string>(null)
@@ -28,9 +36,6 @@ function remove_chip(tag: string) {
   search.value = search.value.replace(new RegExp(`\\s*${tag}`, 'g'), '')
 }
 
-const vehicles_query = useQuery({ queryKey: ["swapi", 'vehicles'], queryFn: get_all_vehicles })
-const species_query = useQuery({ queryKey: ['swapi', 'species'], queryFn: get_all_species })
-
 const vehicles = computed(() => {
   if (vehicles_query.isError.value) {
     return 'error'
@@ -39,7 +44,7 @@ const vehicles = computed(() => {
     return 'loading'
   }
   if (vehicles_query.isSuccess.value) {
-    return vehicles_query.data.value?.map(_species => _species.name)
+    return vehicles_query.data.value!.map(_species => _species.name)
   }
   return null
 
@@ -53,7 +58,7 @@ const species = computed(() => {
     return 'loading'
   }
   if (species_query.isSuccess.value) {
-    return species_query.data.value?.map(_species => _species.name)
+    return species_query.data.value!.map(_species => _species.name)
   }
   return null
 })
@@ -65,6 +70,37 @@ const search_query = useQuery({
   placeholderData: keepPreviousData,
   staleTime: Temporal.Duration.from({ hours: 1 }).total('milliseconds'),
 })
+
+const skeletons = computed(() => {
+  if (search_query.isLoading.value || search_query.isError.value) {
+    return Array.from({ length: 10 })
+  }
+  return []
+})
+
+const characters = computed(() => {
+  if (search_query.isSuccess.value) {
+    return search_query.data.value!
+  }
+  return []
+})
+
+const virtual_parent_ref = ref<HTMLElement | null>(null)
+
+const virtualizer_options = computed(() => ({
+  horizontal: true,
+  count: skeletons.value.length + characters.value.length,
+  estimateSize: () => 320,
+  scrollMargin: virtual_parent_ref.value?.offsetWidth ?? 0,
+  getScrollElement: () => virtual_parent_ref.value,
+  overscan: 5,
+  scrollToFn: elementScroll
+}))
+
+const virtualizer = useVirtualizer(virtualizer_options)
+
+const virtual_rows = computed(() => virtualizer.value.getVirtualItems())
+const total_size = computed(() => virtualizer.value.getTotalSize())
 
 </script>
 
@@ -93,12 +129,32 @@ const search_query = useQuery({
       </div>
     </div>
 
-    <div class="flex flex-row w-full">
-      <CharacterCard v-for="character in search_query.data.value" :key="character.uid"
-        :character_name="character.properties.name" :gender="character.properties.gender" :uid='character.uid' />
+    <div ref="virtual_parent_ref" class="w-full h-96 py-10 overflow-x-auto overflow-y-hidden
+      scroll-smooth">
+      <!-- SPACER -->
+      <div class="md:h-full relative" :style="{ width: `${total_size}px` }">
+
+        <!-- VISIBLE ITEMS -->
+        <div class="absolute top-0 left-0 h-full" :style="{
+          transform:
+            `translateX(${virtual_rows[0]?.start - virtualizer.options.scrollMargin}px)`
+        }">
+
+          <!-- ITEMS -->
+          <div v-for="virtual_row in virtual_rows" :key="virtual_row?.key" :data-index="virtual_row.index" :ref="el => {
+            // @ts-ignore
+            virtualizer.measureElement(el)
+          }" class="inline-block">
+            <div style="padding: 0 10px">
+              <div>Column {{ virtual_row.index }}</div>
+              <CharacterCard :character_name="characters[virtual_row.index]?.properties.name"
+                :gender="characters[virtual_row.index]?.properties.gender" :uid='characters[virtual_row.index]?.uid'
+                :query_status="search_query.status.value" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-
-
 
   </main>
 </template>

@@ -1,8 +1,8 @@
 import p5 from "p5";
 import { type Ref } from "vue";
 
-import shader_frag from "../../assets/starfield.frag"
-import shader_vert from "../../assets/starfield.vert"
+import shader_frag from "@/assets/starfield.frag"
+import shader_vert from "@/assets/starfield.vert"
 
 type SKETCH_PROPS = {
   speed_ref: Ref<number>
@@ -31,7 +31,7 @@ export const sketch_builder = (props: SKETCH_PROPS) => (p: p5) => {
   }
 
   p.setup = () => {
-    p.createCanvas(width, height, p.WEBGL2)
+    p.createCanvas(width, height, p.WEBGL)
     p.shader(shader)
   }
 

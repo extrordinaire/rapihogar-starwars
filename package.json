@@ -17,12 +17,12 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.4",
     "@tanstack/vue-query": "^5.74.4",
-    "@types/p5": "^1.7.6",
+    "@tanstack/vue-virtual": "^3.13.6",
     "@vitejs/plugin-vue-jsx": "^4.1.2",
     "@zod/mini": "4.0.0-beta.0",
     "beercss": "^3.10.7",
     "material-dynamic-colors": "^1.1.2",
-    "p5": "^2.0.0",
+    "p5": "1.x",
     "pinia": "^3.0.1",
     "tailwindcss": "^4.1.4",
     "temporal-polyfill": "^0.3.0",
@@ -33,6 +33,7 @@
   "devDependencies": {
     "@tsconfig/node22": "^22.0.1",
     "@types/node": "^22.14.0",
+    "@types/p5": "^1.7.6",
     "@vitejs/plugin-vue": "^5.2.3",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.5.0",
