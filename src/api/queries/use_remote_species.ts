@@ -27,7 +27,10 @@ function useRemoteSpecies(params: { uid: string }) {
   const remote_species_query = useQuery({
     queryKey: ['swapi', 'species', params.uid],
     queryFn: () => get_species({ uid: params.uid }),
-    staleTime: Infinity
+    staleTime: Infinity,
+    select: (data) => ({
+
+    })
   })
 
   return remote_species_query
