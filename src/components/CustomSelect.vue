@@ -1,11 +1,14 @@
 <script setup lang="tsx">
+import type { QueryStatus } from '@tanstack/vue-query';
+
 
 const props = withDefaults(defineProps<{
-  options: string[] | null | 'loading' | 'error',
+  status: QueryStatus,
+  options: [uid:string,value:string][],
   label: string,
   class?: string,
 }>(), {
-  options: null,
+  status: 'pending',
   label: '',
   class: '',
 })
@@ -19,7 +22,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div v-if="props.options === 'error'" :class="`field label relative error suffix border large
+  <div v-if="status === 'error'" :class="`field label relative error suffix border large
     ${props.class}`">
     <select disabled></select>
     <div class="flex w-full h-full absolute top-0 justify-center items-center">
@@ -29,7 +32,7 @@ const emit = defineEmits<{
     <i>arrow_drop_down</i>
   </div>
 
-  <div v-else-if="props.options === 'loading'" :class="`field label relative suffix border large
+  <div v-else-if="status === 'pending'" :class="`field label relative suffix border large
                   animate-pulse ${props.class}`">
     <select disabled></select>
     <div class="flex w-full h-full absolute top-0 justify-center items-center">
@@ -39,7 +42,7 @@ const emit = defineEmits<{
     <i>arrow_drop_down</i>
   </div>
 
-  <div v-else-if="props.options === null" :class="`field label suffix border large ${props.class}`">
+  <div v-else-if="props.options.length === 0" :class="`field label suffix border large ${props.class}`">
     <select disabled>
       <option value="">{{ props.label }}</option>
     </select>
@@ -49,7 +52,7 @@ const emit = defineEmits<{
   <div v-else :class="`field label suffix border large ${props.class}`">
     <select v-model="selected_option" @change="emit('change', selected_option!)">
       <option value=""></option>
-      <option v-for="option in props.options" :key="option" :value="option">{{ option }}</option>
+      <option v-for="[uid,value] in props.options" :key="uid" :value="uid">{{ value }}</option>
     </select>
     <label>{{ props.label }}
     </label>

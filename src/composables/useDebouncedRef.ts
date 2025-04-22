@@ -1,7 +1,10 @@
 import { ref, watch } from 'vue'
-import { Temporal } from 'temporal-polyfill'
 
-export function useDebouncedRef<T>(params: { initial_value: T, delay: Temporal.DurationLike, abort_signal?: AbortSignal }) {
+export function useDebouncedRef<T>(params: {
+  initial_value: T
+  delay_ms: number
+  abort_signal?: AbortSignal
+}) {
   const value = ref(params.initial_value)
   const debounced_value = ref(params.initial_value)
 
@@ -12,9 +15,7 @@ export function useDebouncedRef<T>(params: { initial_value: T, delay: Temporal.D
     }
     timer = setTimeout(() => {
       debounced_value.value = value.value
-    },
-      Temporal.Duration.from(params.delay).total({ unit: 'milliseconds', relativeTo: Temporal.Now.zonedDateTimeISO() }),
-    )
+    }, params.delay_ms)
   })
 
   return {
@@ -22,4 +23,3 @@ export function useDebouncedRef<T>(params: { initial_value: T, delay: Temporal.D
     debounced_value: debounced_value,
   }
 }
-
