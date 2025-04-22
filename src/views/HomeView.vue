@@ -36,12 +36,40 @@ function remove_chip(tag: string) {
 }
 
 const search_query = useQuery({
-  queryKey: computed(() => ['swapi', debounced_search.value] as const),
+  queryKey: computed(() => ['swapi', 'search', debounced_search.value] as const),
   queryFn: () => search_people({ name: debounced_search.value }),
   enabled: computed(() => debounced_search.value.length > 0),
   placeholderData: keepPreviousData,
   staleTime: Infinity,
 })
+
+// const hydrated_queries = useQueries({
+//   queries: computed(() => {
+//     const raw = []
+
+//     for (const index of virtual_indexes.value) {
+//       const character = search_query.data.value?.[index]
+//       if (!character) continue
+
+//       raw.push({
+//         queryKey: ['swapi', 'people', character.uid] as const,
+//         queryFn: () => get_people({ uid: character.uid }),
+//         enabled: true,
+//         placeholderData: ({
+//           result: {
+//             properties: {
+//               name: character.properties.name,
+              
+//             },
+//             uid: character.uid
+//           }
+//         })
+//       })
+//     }
+//     return raw as typeof raw
+//   }),
+// })
+
 
 const skeletons = computed(() => {
   if (search_query.isLoading.value || search_query.isError.value) {
@@ -72,7 +100,9 @@ const virtualizer_options = computed(() => ({
 const virtualizer = useVirtualizer(virtualizer_options)
 
 const virtual_rows = computed(() => virtualizer.value.getVirtualItems())
+const virtual_indexes = computed(()=> virtual_rows.value.map(v => v.index) ?? [])
 const total_size = computed(() => virtualizer.value.getTotalSize())
+
 </script>
 
 <template>
